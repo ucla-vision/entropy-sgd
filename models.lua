@@ -89,7 +89,7 @@ function models.build()
     elseif opt.model == 'cifarconv' then
         m = cifarconv()
     else
-        assert('Unknown opt.model: ' .. opt.model)
+        assert(false, 'Unknown opt.model: ' .. opt.model)
     end
 
     local cost = nn.ClassNLLCriterion()

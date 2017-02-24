@@ -7,7 +7,7 @@ opt = lapp[[
 --LR                (default 0)                 Learning rate
 --dropout           (default 0.5)               Dropout
 --L                 (default 0)                 Num. Langevin iterations
---gamma             (default 0.03)              Langevin gamma coefficient
+--gamma             (default 1e-4)              Langevin gamma coefficient
 --scoping           (default 1e-3)              Scoping parameter \gamma*(1+scoping)^t
 --noise             (default 1e-4)              Langevin dynamics additive noise factor (*stepSize)
 -g,--gpu            (default 1)                 GPU id
@@ -26,7 +26,6 @@ end
 local utils = require 'utils.lua'
 local models = require 'models'
 require 'entropyoptim'
-utils.set_gpu()
 
 function trainer(d)
     local x, y = d.data, d.labels
@@ -36,12 +35,13 @@ function trainer(d)
     local bs = opt.batch_size
     local num_batches = x:size(1)/bs
     local timer = torch.Timer()
+    local timer1 = torch.Timer()
 
     local loss = 0
     confusion:zero()
     for b =1,num_batches do
         collectgarbage()
-        local timer1 = torch.Timer()
+        timer1:reset()
 
         local feval = function(_w, dry)
             local dry = dry or false
@@ -68,13 +68,13 @@ function trainer(d)
 
         optim.entropysgd(feval, w, optim_state)
         if b % 100 == 0 then
-            print( ('+[%2d][%3d/%3d] %.5f %.3f%% [%.2fs]'):format(epoch,
-                b, num_batches, loss/b, (1 - confusion.totalValid)*100, timer:time().real))
+            print( ('+[%3d][%3d/%3d] %.5f %.3f%%'):format(epoch,
+                b, num_batches, loss/b, (1 - confusion.totalValid)*100))
         end
     end
 
     loss = loss/num_batches
-    print(('Train: [%2d] %.5f %.3f%% [%.2fs]'):format(epoch, loss,
+    print(('Train: [%3d] %.5f %.3f%% [%.2fs]'):format(epoch, loss,
         (1 - confusion.totalValid)*100, timer:time().real))
     print('')
 end
@@ -107,7 +107,7 @@ function compute_bn_params(d)
     local w, dw = model:getParameters()
     model:training()
     
-    local bs = 4096
+    local bs = 1024
     local num_batches = math.ceil(x:size(1)/bs)
 
     for b =1,num_batches do
@@ -138,7 +138,6 @@ function tester(d)
     local bs = 1024
     local num_batches = math.ceil(x:size(1)/bs)
 
-    local mc = 1
     local loss = 0
     confusion:zero()
     for b =1,num_batches do
@@ -148,16 +147,12 @@ function tester(d)
         local xc, yc = x:narrow(1, sidx + 1, eidx-sidx):cuda(),
         y:narrow(1, sidx + 1, eidx-sidx):cuda()
 
-        local f = 0
-        for m=1,mc do
-            local yh = model:forward(xc)
-            f = f + cost:forward(yh, yc)
-            cutorch.synchronize()
+        local yh = model:forward(xc)
+        local f = cost:forward(yh, yc)
+        cutorch.synchronize()
 
-            confusion:batchAdd(yh, yc)
-            confusion:updateValids()
-        end
-        f = f/mc
+        confusion:batchAdd(yh, yc)
+        confusion:updateValids()
         loss = loss + f
         if b % 100 == 0 then
             print( ('*[%2d][%3d/%3d] %.5f %.3f%%'):format(epoch, b, num_batches, loss/b, (1 - confusion.totalValid)*100))
@@ -169,6 +164,7 @@ function tester(d)
 end
 
 function learning_rate_schedule()
+    local lr = opt.LR
     if opt.LR > 0 then
         print(('[LR] %.5f'):format(lr))
         return lr
@@ -178,8 +174,9 @@ function learning_rate_schedule()
     if opt.L == 0 then
         if opt.model == 'mnistfc' or opt.model == 'mnistconv' then
             regimes = {
-                {1,60,0.1},
-                {60,150,0.1*0.2}}
+                {1,30,0.1},
+                {30,60,0.1*0.2},
+                {60,150,0.1*0.2^2}}
             opt.max_epochs = 100
         elseif opt.model == 'cifarconv' then
             regimes = {
@@ -222,6 +219,7 @@ function learning_rate_schedule()
 end
 
 function main()
+    utils.set_gpu()
     model, cost = models.build()
     local train, val, test = utils.load_dataset()
 
@@ -240,12 +238,13 @@ function main()
         L=opt.L,
         noise = opt.noise}
 
-
+    local freq = 5
+    if opt.L > 0 then freq = 1 end
     epoch = epoch or 1
     while epoch <= opt.max_epochs do
         optim_state.learningRate = learning_rate_schedule()
         trainer(train)
-        if epoch % 5 == 0 then
+        if epoch % freq == 0 then
             tester(val)
         end
 
@@ -253,7 +252,7 @@ function main()
         print('')
     end
     print('Finished')
-    tester(val)
+    tester(test)
 end
 
 main()
