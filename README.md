@@ -45,4 +45,4 @@ Everything else is identical to the Lua version.
 
 ### Computing the Hessian
 
-The code in [hessian.py](python/hessian.py) computes the Hessian for a small convolutional neural network using SGD and Autograd. Please note that this takes a lot of time, a day or so, and you need to be careful of the memory usage. The experiments in the paper were run on EC2 with 256 GB RAM.
+The code in [hessian.py](python/hessian.py) computes the Hessian for a small convolutional neural network using SGD and Autograd. Please note that this takes a lot of time, a day or so, and you need to be careful of the memory usage. The experiments in the paper were run on EC2 with 256 GB RAM. Note that this code uses the MNIST dataset downloaded when you run the PyTorch step above.
