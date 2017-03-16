@@ -12,9 +12,8 @@ class View(nn.Module):
 
 def num_parameters(model):
     n = 0
-    for m in model.modules():
-        for w in m.parameters():
-            n += w.numel()
+    for w in model.parameters():
+        n += w.numel()
     return n
 
 class mnistfc(nn.Module):
