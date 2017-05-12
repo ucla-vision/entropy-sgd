@@ -9,7 +9,7 @@ class sampler_t:
         self.n = x.size(0)
         self.x, self.y = x,y
         self.b = batch_size
-        self.idx = th.arange(0, self.b).long()
+        self.idx = th.range(0, self.b-1).long()
         self.train = train
         self.sidx = 0
 
@@ -18,10 +18,10 @@ class sampler_t:
             self.idx.random_(0,self.n-1)
         else:
             s = self.sidx
-            e = min(s+self.b, self.n)
+            e = min(s+self.b-1, self.n-1)
             #print s,e
 
-            self.idx = th.arange(s, e).long()
+            self.idx = th.range(s, e).long()
             self.sidx += self.b
             if self.sidx >= self.n:
                 self.sidx = 0
