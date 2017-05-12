@@ -39,6 +39,7 @@ local function mnistfc()
         if i == 1 then c1 = 784 else c1 = c end
         m:add(nn.Linear(c1, c))
         m:add(nn.ReLU(true))
+        m:add(nn.BatchNormalization(c))
         m:add(nn.Dropout(opt.dropout))
     end
 

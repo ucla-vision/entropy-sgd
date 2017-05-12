@@ -29,9 +29,11 @@ class mnistfc(nn.Module):
             nn.Dropout(0.2),
             nn.Linear(784,c),
             nn.ReLU(True),
+            nn.BatchNorm1d(c),
             nn.Dropout(opt['d']),
             nn.Linear(c,c),
             nn.ReLU(True),
+            nn.BatchNorm1d(c),
             nn.Dropout(opt['d']),
             nn.Linear(c,10))
 

@@ -90,7 +90,7 @@ function optim.entropysgd(opfunc, x, config, state)
 
             eta:normal()
             ldfdx:add(-g, xc-lx):add(wd,lx):add(noise/math.sqrt(0.5*lclr), eta)
-            
+
             -- update and average
             lx:add(-lclr, ldfdx)
 

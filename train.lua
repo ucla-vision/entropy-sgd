@@ -31,7 +31,7 @@ function trainer(d)
     local x, y = d.data, d.labels
     local w, dw = model:getParameters()
     model:training()
-    
+
     local bs = opt.batch_size
     local num_batches = x:size(1)/bs
     local timer = torch.Timer()
@@ -106,7 +106,7 @@ function compute_bn_params(d)
     local x, y = d.data, d.labels
     local w, dw = model:getParameters()
     model:training()
-    
+
     local bs = 1024
     local num_batches = math.ceil(x:size(1)/bs)
 
