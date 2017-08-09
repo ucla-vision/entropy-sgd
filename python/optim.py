@@ -32,10 +32,6 @@ class EntropySGD(Optimizer):
         g0 = c['g0']
         g1 = c['g1']
 
-        # print c
-        # raw_input()
-
-        # only deal with the basic group?
         params = self.param_groups[0]['params']
 
         state = self.state

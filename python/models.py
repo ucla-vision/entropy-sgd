@@ -28,12 +28,12 @@ class mnistfc(nn.Module):
             View(784),
             nn.Dropout(0.2),
             nn.Linear(784,c),
-            nn.ReLU(True),
             nn.BatchNorm1d(c),
+            nn.ReLU(True),
             nn.Dropout(opt['d']),
             nn.Linear(c,c),
-            nn.ReLU(True),
             nn.BatchNorm1d(c),
+            nn.ReLU(True),
             nn.Dropout(opt['d']),
             nn.Linear(c,10))
 
@@ -52,9 +52,9 @@ class mnistconv(nn.Module):
         def convbn(ci,co,ksz,psz,p):
             return nn.Sequential(
                 nn.Conv2d(ci,co,ksz),
+                nn.BatchNorm2d(co),
                 nn.ReLU(True),
                 nn.MaxPool2d(psz,stride=psz),
-                nn.BatchNorm2d(co),
                 nn.Dropout(p))
 
         self.m = nn.Sequential(
@@ -62,6 +62,7 @@ class mnistconv(nn.Module):
             convbn(20,50,5,2,opt['d']),
             View(50*2*2),
             nn.Linear(50*2*2, 500),
+            nn.BatchNorm1d(500),
             nn.ReLU(True),
             nn.Dropout(opt['d']),
             nn.Linear(500,10))

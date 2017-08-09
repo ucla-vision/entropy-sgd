@@ -47,8 +47,6 @@ criterion = nn.CrossEntropyLoss().cuda()
 optimizer = optim.EntropySGD(model.parameters(),
         config = dict(lr=opt['lr'], momentum=0.9, nesterov=True, weight_decay=opt['l2'],
         L=opt['L'], eps=opt['noise'], g0=opt['gamma'], g1=opt['scoping']))
-# optimizer = th.optim.SGD(model.parameters(),
-#     lr=opt['lr'], momentum=0.9, nesterov=True)
 
 print(opt)
 
@@ -79,7 +77,6 @@ def train(e):
             return feval
 
         f, err = optimizer.step(helper(), model, criterion)
-        #f, err = optimizer.step(helper())
         th.cuda.synchronize()
 
         fs.update(f, bsz)
