@@ -26,8 +26,8 @@ ap('-s', help='seed', type=int, default=42)
 opt = vars(parser.parse_args())
 
 th.set_num_threads(2)
-opt['no_cuda'] = not th.cuda.is_available()
-if opt['no_cuda']:
+opt['cuda'] = th.cuda.is_available()
+if opt['cuda']:
     opt['g'] = -1
     th.cuda.set_device(opt['g'])
     th.cuda.manual_seed(opt['s'])
@@ -46,7 +46,7 @@ else:
 train_loader, val_loader, test_loader = getattr(loader, opt['dataset'])(opt)
 model = getattr(models, opt['m'])(opt)
 criterion = nn.CrossEntropyLoss()
-if not opt['no_cuda']:
+if opt['cuda']:
     model = model.cuda()
     criterion = criterion.cuda()
 
@@ -69,7 +69,7 @@ def train(e):
         def helper():
             def feval():
                 x,y = next(train_loader)
-                if not opt['no_cuda']:
+                if opt['cuda']:
                     x,y = x.cuda(), y.cuda()
 
                 x, y = Variable(x), Variable(y.squeeze())
@@ -115,7 +115,7 @@ def dry_feed():
     maxb = int(math.ceil(train_loader.n/opt['b']))
     for bi in xrange(maxb):
         x,y = next(train_loader)
-        if not opt['no_cuda']:
+        if opt['cuda']:
             x,y = x.cuda(), y.cuda()
         x,y =   Variable(x, volatile=True), \
                 Variable(y.squeeze(), volatile=True)
@@ -133,7 +133,7 @@ def val(e, data_loader):
         x,y = next(data_loader)
         bsz = x.size(0)
 
-        if not opt['no_cuda']:
+        if opt['cuda']:
             x,y = x.cuda(), y.cuda()
 
         x,y =   Variable(x, volatile=True), \
