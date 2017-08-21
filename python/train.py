@@ -22,7 +22,7 @@ ap('--gamma', help='gamma', type=float, default=1e-4)
 ap('--scoping', help='scoping', type=float, default=1e-3)
 ap('--noise', help='SGLD noise', type=float, default=1e-4)
 ap('-g', help='GPU idx.', type=int, default=1)
-ap('--no_cuda', help='run on gpu', action='store_true')
+ap('--no_cuda', help='run on cpu', action='store_true')
 ap('-s', help='seed', type=int, default=42)
 opt = vars(parser.parse_args())
 
