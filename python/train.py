@@ -22,16 +22,19 @@ ap('--gamma', help='gamma', type=float, default=1e-4)
 ap('--scoping', help='scoping', type=float, default=1e-3)
 ap('--noise', help='SGLD noise', type=float, default=1e-4)
 ap('-g', help='GPU idx.', type=int, default=1)
+ap('--no_cuda', help='run on gpu', action='store_true')
 ap('-s', help='seed', type=int, default=42)
 opt = vars(parser.parse_args())
 
 th.set_num_threads(2)
-th.cuda.set_device(opt['g'])
+if opt['no_cuda']:
+    opt['g'] = -1
+    th.cuda.set_device(opt['g'])
+    th.cuda.manual_seed(opt['s'])
+    cudnn.benchmark = True
 random.seed(opt['s'])
 np.random.seed(opt['s'])
 th.manual_seed(opt['s'])
-th.cuda.manual_seed(opt['s'])
-cudnn.benchmark = True
 
 if 'mnist' in opt['m']:
     opt['dataset'] = 'mnist'
@@ -41,9 +44,12 @@ else:
     assert False, "Unknown opt['m']: " + opt['m']
 
 train_loader, val_loader, test_loader = getattr(loader, opt['dataset'])(opt)
-model = getattr(models, opt['m'])(opt).cuda()
+model = getattr(models, opt['m'])(opt)
+criterion = nn.CrossEntropyLoss()
+if not opt['no_cuda']:
+    model = model.cuda()
+    criterion = criterion.cuda()
 
-criterion = nn.CrossEntropyLoss().cuda()
 optimizer = optim.EntropySGD(model.parameters(),
         config = dict(lr=opt['lr'], momentum=0.9, nesterov=True, weight_decay=opt['l2'],
         L=opt['L'], eps=opt['noise'], g0=opt['gamma'], g1=opt['scoping']))
@@ -63,7 +69,10 @@ def train(e):
         def helper():
             def feval():
                 x,y = next(train_loader)
-                x, y = Variable(x.cuda()), Variable(y.squeeze().cuda())
+                if not opt['no_cuda']:
+                    x,y = x.cuda(), y.cuda()
+
+                x, y = Variable(x), Variable(y.squeeze())
                 bsz = x.size(0)
 
                 optimizer.zero_grad()
@@ -77,7 +86,6 @@ def train(e):
             return feval
 
         f, err = optimizer.step(helper(), model, criterion)
-        th.cuda.synchronize()
 
         fs.update(f, bsz)
         top1.update(err, bsz)
@@ -107,8 +115,10 @@ def dry_feed():
     maxb = int(math.ceil(train_loader.n/opt['b']))
     for bi in xrange(maxb):
         x,y = next(train_loader)
-        x,y =   Variable(x.cuda(), volatile=True), \
-                Variable(y.squeeze().cuda(), volatile=True)
+        if not opt['no_cuda']:
+            x,y = x.cuda(), y.cuda()
+        x,y =   Variable(x, volatile=True), \
+                Variable(y.squeeze(), volatile=True)
         yh = model(x)
     set_dropout(cache)
 
@@ -117,14 +127,17 @@ def val(e, data_loader):
     model.eval()
 
     maxb = int(math.ceil(data_loader.n/opt['b']))
-    
+
     fs, top1 = AverageMeter(), AverageMeter()
     for bi in xrange(maxb):
         x,y = next(data_loader)
         bsz = x.size(0)
 
-        x,y =   Variable(x.cuda(), volatile=True), \
-                Variable(y.squeeze().cuda(), volatile=True)
+        if not opt['no_cuda']:
+            x,y = x.cuda(), y.cuda()
+
+        x,y =   Variable(x, volatile=True), \
+                Variable(y.squeeze(), volatile=True)
         yh = model(x)
 
         f = criterion.forward(yh, y).data[0]

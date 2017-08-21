@@ -7,14 +7,12 @@ class View(nn.Module):
     def __init__(self,o):
         super(View, self).__init__()
         self.o = o
+
     def forward(self,x):
         return x.view(-1, self.o)
 
 def num_parameters(model):
-    n = 0
-    for w in model.parameters():
-        n += w.numel()
-    return n
+    return sum([w.numel() for w in model.parameters()])
 
 class mnistfc(nn.Module):
     def __init__(self, opt):
@@ -84,6 +82,7 @@ class allcnn(nn.Module):
                 nn.Conv2d(ci,co,ksz,stride=s,padding=pz),
                 nn.BatchNorm2d(co),
                 nn.ReLU(True))
+
         self.m = nn.Sequential(
             nn.Dropout(0.2),
             convbn(3,c1,3,1,1),

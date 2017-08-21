@@ -20,7 +20,7 @@ class EntropySGD(Optimizer):
         assert (closure is not None) and (model is not None) and (criterion is not None), \
                 'attach closure for Entropy-SGD, model and criterion'
         mf,merr = closure()
-        
+
         c = self.config
         lr = c['lr']
         mom = c['momentum']
@@ -56,7 +56,7 @@ class EntropySGD(Optimizer):
             lp['mdw'][i].zero_()
             lp['eta'][i].normal_()
 
-        state['debug'] = dict(wwpd=0, df=0, dF=0, g=0, eta=0)        
+        state['debug'] = dict(wwpd=0, df=0, dF=0, g=0, eta=0)
         llr, beta1 = lp['lr'], lp['beta1']
         g = g0*(1+g1)**state['t']
 
@@ -100,7 +100,7 @@ class EntropySGD(Optimizer):
                     dw.add_(mom, mdw)
                 else:
                     dw = mdw
-            
+
             w.data.add_(-lr, dw)
 
         return mf,merr
