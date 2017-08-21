@@ -21,12 +21,12 @@ ap('-L', help='Langevin iterations', type=int, default=0)
 ap('--gamma', help='gamma', type=float, default=1e-4)
 ap('--scoping', help='scoping', type=float, default=1e-3)
 ap('--noise', help='SGLD noise', type=float, default=1e-4)
-ap('-g', help='GPU idx.', type=int, default=1)
-ap('--no_cuda', help='run on cpu', action='store_true')
+ap('-g', help='GPU idx.', type=int, default=0)
 ap('-s', help='seed', type=int, default=42)
 opt = vars(parser.parse_args())
 
 th.set_num_threads(2)
+opt['no_cuda'] = not th.cuda.is_available()
 if opt['no_cuda']:
     opt['g'] = -1
     th.cuda.set_device(opt['g'])

@@ -39,7 +39,7 @@ The code for this is inside the [python](python) folder. You will need the Pytho
    ```
    python train.py -m mnistconv -L 20 --gamma 1e-4 --scoping 1e-3 --noise 1e-4
    ```
-Everything else is identical to the Lua version. You can use the option `--no_cuda` to run on the CPU.
+Everything else is identical to the Lua version.
 
 -----------------------------
 
