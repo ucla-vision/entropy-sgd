@@ -60,7 +60,7 @@ class EntropySGD(Optimizer):
         llr, beta1 = lp['lr'], lp['beta1']
         g = g0*(1+g1)**state['t']
 
-        for i in xrange(L):
+        for i in range(L):
             f,_ = closure()
             for wc,w,mw,mdw,eta in zip(state['wc'], params, \
                                     lp['mw'], lp['mdw'], lp['eta']):

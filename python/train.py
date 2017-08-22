@@ -65,7 +65,7 @@ def train(e):
     bsz = opt['b']
     maxb = int(math.ceil(train_loader.n/bsz))
 
-    for bi in xrange(maxb):
+    for bi in range(maxb):
         def helper():
             def feval():
                 x,y = next(train_loader)
@@ -113,7 +113,7 @@ def set_dropout(cache = None, p=0):
 def dry_feed():
     cache = set_dropout()
     maxb = int(math.ceil(train_loader.n/opt['b']))
-    for bi in xrange(maxb):
+    for bi in range(maxb):
         x,y = next(train_loader)
         if opt['cuda']:
             x,y = x.cuda(), y.cuda()
@@ -129,7 +129,7 @@ def val(e, data_loader):
     maxb = int(math.ceil(data_loader.n/opt['b']))
 
     fs, top1 = AverageMeter(), AverageMeter()
-    for bi in xrange(maxb):
+    for bi in range(maxb):
         x,y = next(data_loader)
         bsz = x.size(0)
 
@@ -150,7 +150,7 @@ def val(e, data_loader):
     print('Test: [%2d] %2.4f %2.4f%%\n'%(e, fs.avg, top1.avg))
     print()
 
-for e in xrange(opt['B']):
+for e in range(opt['B']):
     train(e)
     if e % 5 == 0:
         val(e, val_loader)
