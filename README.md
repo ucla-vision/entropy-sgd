@@ -13,10 +13,10 @@ This is the implementation for [Entropy-SGD: Biasing Gradient Descent Into Wide 
    th train.lua -m mnistconv -L 20 --gamma 1e-4 --scoping 1e-3 --noise 1e-4
    ```
 The parameters perform the following functions:
-    - L is the number of Langevin updates in the algorithm, this controls the exploration and is usually set to 20 in our experiments;
-    - gamma is also called "scope" in the paper and controls the forcing term that prevents the Langevin updates from exploring too far;
-    - scoping is a technique that progressively increases the value of gamma during the course of training, this modulates gamma as a function of time: ``gamma (1 + scoping)^t`` where ``t`` is the number of parameter updates;
-    - noise is the temperature term in Langevin dynamics.
+  - L is the number of Langevin updates in the algorithm, this controls the exploration and is usually set to 20 in our experiments;
+  - gamma is also called "scope" in the paper and controls the forcing term that prevents the Langevin updates from exploring too far;
+  - scoping is a technique that progressively increases the value of gamma during the course of training, this modulates gamma as a function of time: ``gamma (1 + scoping)^t`` where ``t`` is the number of parameter updates;
+  - noise is the temperature term in Langevin dynamics.
 
 3. Note that running the code with ``-L 0`` argument (default) will use vanilla SGD with Nesterov's momentum. We also collect some run-time statistics of Entropy-SGD such as the gradient norms, direction of the local entropy gradient vs. original stochastic gradient etc. You can see these using the ``-v / --verbose`` option.
 
